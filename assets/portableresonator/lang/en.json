@@ -1,0 +1,13 @@
+{
+	"item-portableresonator-*": "Portable Resonator",
+	"itemdesc-portableresonator-*": "A portable version of the standard resonator. Only the most wealthy nobles possessed such a device of luxury.",
+	"resonator-empty": "No tuning cylinder loaded",
+	"resonator-loaded": "Loaded: {0}",
+	"resonator-playing": "Playing",
+	"resonator-gui-title": "Portable Resonator",
+	"resonator-gui-insert": "Place a tuning cylinder here",
+	"resonator-gui-stopped": "Stopped. Shift + right-click to play",
+	"heldhelp-resonator-open": "Insert or remove a tuning cylinder",
+	"heldhelp-resonator-toggle": "Start / stop the song",
+	"ingameerror-resonator-nocylinder": "No tuning cylinder loaded. Right-click to insert one"
+}

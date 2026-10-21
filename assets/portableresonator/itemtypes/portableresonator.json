@@ -1,0 +1,74 @@
+{
+	code: "portableresonator",
+	class: "ItemPortableResonator",
+	// "loaded" shows the cylinder. It's a variant rather than stack data because item codes sync to other
+	// players' clients and stack attributes don't (see Engine Notes).
+	variantgroups: [
+		{ code: "cylinder", states: ["empty", "loaded"] }
+	],
+	maxstacksize: 1,
+	behaviors: [
+		{
+			name: "GroundStorable",
+			properties: {
+				layout: "SingleCenter",
+				// ctrl + shift + right-click: plain shift + right-click is play/stop.
+				ctrlKey: true,
+				placeRemoveSound: "game:sounds/player/build",
+				selectionBox: { x1: 0.02, y1: 0, z1: 0.24, x2: 0.98, y2: 0.76, z2: 0.76 },
+				collisionBox: { x1: 0.02, y1: 0, z1: 0.24, x2: 0.98, y2: 0.76, z2: 0.76 }
+			}
+		}
+	],
+	shapeByType: {
+		"*-empty": { base: "item/tool/portableresonator", ignoreElements: ["Cylinder"] },
+		"*-loaded": { base: "item/tool/portableresonator" }
+	},
+	attributes: {
+		portableResonator: {
+			// Played when a cylinder is put in or taken out through the UI.
+			swapSound: "game:sounds/effect/latch",
+			playSound: "game:sounds/block/vinyl"
+		},
+		groundStorageTransform: {
+			translation: { x: -0.125, y: 0, z: 0.125 },
+			rotation: { x: 0, y: 33, z: 0 },
+			origin: { x: 0.625, y: 0, z: 0.375 },
+			scale: 0.7
+		},
+		// One per shelf level (a level is 8 voxels tall). Also covers cabinets, which fall back to this.
+		shelvable: "SingleCenter",
+		onshelfTransform: {
+			translation: { x: -0.125, y: 0, z: 0.125 },
+			rotation: { x: 0, y: 0, z: 0 },
+			origin: { x: 0.625, y: 0, z: 0.375 },
+			scale: 0.4
+		}
+	},
+	creativeinventory: { "general": ["*-empty"], "items": ["*-empty"] },
+	materialDensity: 900,
+	guiTransform: {
+		translation: { x: 1, y: 0, z: 0 },
+		rotation: { x: -1, y: 12, z: 163 },
+		origin: { x: 0.5, y: 0.25, z: 0.5 },
+		scale: 1.54
+	},
+	fpHandTransform: {
+		translation: { x: 0.05, y: 0.15, z: 0.4 },
+		rotation: { x: 0, y: 75, z: 0 },
+		origin: { x: 0.5, y: 0.2, z: 0.5 },
+		scale: 1.8
+	},
+	tpHandTransform: {
+		translation: { x: -0.75, y: -0.6, z: -0.5 },
+		rotation: { x: 0, y: 180, z: 0 },
+		origin: { x: 0.5, y: 0.2, z: 0.5 },
+		scale: 0.7
+	},
+	groundTransform: {
+		translation: { x: 0, y: 0, z: 0 },
+		rotation: { x: 0, y: 0, z: 0 },
+		origin: { x: 0.5, y: 0, z: 0.5 },
+		scale: 2.5
+	}
+}

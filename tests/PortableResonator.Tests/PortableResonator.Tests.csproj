@@ -1,0 +1,75 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Atlas integration tests: each test class boots a real headless Vintage Story server with the mod
+    staged from ../../PortableResonator.csproj (a folder mod, so assets/ and modinfo.json come along).
+    Run with `dotnet test tests/PortableResonator.Tests` or `./build.sh` (tests run after every build).
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!-- Same resolution order as the mod's csproj: $VINTAGE_STORY, then the default Windows install. -->
+  <PropertyGroup>
+    <VintageStoryDir Condition="'$(VintageStoryDir)' == ''">$(VINTAGE_STORY)</VintageStoryDir>
+    <VintageStoryDir Condition="'$(VintageStoryDir)' == '' and Exists('$(APPDATA)/Vintagestory/VintagestoryAPI.dll')">$(APPDATA)/Vintagestory</VintageStoryDir>
+    <!-- Read by the Atlas package targets, which copy the game's own Newtonsoft.Json into the output. -->
+    <VintageStoryPath>$(VintageStoryDir)</VintageStoryPath>
+    <!--
+      Atlas finds the game at runtime only through the VINTAGE_STORY environment variable of the test
+      host. This generated runsettings file hands it over, so tests run without the variable set.
+    -->
+    <AtlasRunSettings>$(MSBuildProjectDirectory)/obj/atlas.runsettings</AtlasRunSettings>
+    <RunSettingsFilePath>$(AtlasRunSettings)</RunSettingsFilePath>
+  </PropertyGroup>
+
+  <Target Name="WriteAtlasRunSettings" BeforeTargets="Build">
+    <Error Condition="!Exists('$(VintageStoryDir)/VintagestoryLib.dll')"
+           Text="Could not find VintagestoryLib.dll in '$(VintageStoryDir)'. Set the VINTAGE_STORY environment variable to your Vintage Story install directory." />
+    <WriteLinesToFile File="$(AtlasRunSettings)" Overwrite="true" WriteOnlyWhenDifferent="true"
+                      Lines="&lt;RunSettings&gt;&lt;RunConfiguration&gt;&lt;EnvironmentVariables&gt;&lt;VINTAGE_STORY&gt;$([System.IO.Path]::GetFullPath('$(VintageStoryDir)'))&lt;/VINTAGE_STORY&gt;&lt;/EnvironmentVariables&gt;&lt;/RunConfiguration&gt;&lt;/RunSettings&gt;" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="Pixnop.Atlas.XUnit" Version="0.16.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../PortableResonator.csproj">
+      <AtlasMod>true</AtlasMod>
+    </ProjectReference>
+  </ItemGroup>
+
+  <!-- Private=false: Atlas must load the game install's own copies (with their pdbs), never output copies. -->
+  <ItemGroup>
+    <Reference Include="VintagestoryAPI">
+      <HintPath>$(VintageStoryDir)/VintagestoryAPI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="VSSurvivalMod">
+      <HintPath>$(VintageStoryDir)/Mods/VSSurvivalMod.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="VSEssentials">
+      <HintPath>$(VintageStoryDir)/Mods/VSEssentials.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(VintageStoryDir)/Lib/Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

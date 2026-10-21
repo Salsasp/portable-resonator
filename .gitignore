@@ -1,0 +1,22 @@
+# Build output
+bin/
+obj/
+
+# Packaged mod archives
+*.zip
+
+# IDE / editor
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.swp
+*.workspace
+
+# AI
+CLAUDE.md
+
+# OS
+.DS_Store
+Thumbs.db

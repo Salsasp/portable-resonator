@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>PortableResonator</AssemblyName>
+    <RootNamespace>PortableResonator</RootNamespace>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <!--
+    Point VINTAGE_STORY at the folder containing VintagestoryAPI.dll. On a flatpak install the
+    path contains a build hash that changes on every game update, so resolve it via the symlink
+    or export the variable in your shell rather than hardcoding it here.
+  -->
+  <PropertyGroup>
+    <VintageStoryDir Condition="'$(VintageStoryDir)' == ''">$(VINTAGE_STORY)</VintageStoryDir>
+    <!-- Default Windows install, so IDEs resolve every game assembly without the variable set. -->
+    <VintageStoryDir Condition="'$(VintageStoryDir)' == '' and Exists('$(APPDATA)/Vintagestory/VintagestoryAPI.dll')">$(APPDATA)/Vintagestory</VintageStoryDir>
+    <VintageStoryDir Condition="'$(VintageStoryDir)' == ''">$(MSBuildProjectDirectory)/../vs-game</VintageStoryDir>
+  </PropertyGroup>
+
+  <Target Name="CheckVintageStoryDir" BeforeTargets="BeforeBuild">
+    <Error Condition="!Exists('$(VintageStoryDir)/VintagestoryAPI.dll')"
+           Text="Could not find VintagestoryAPI.dll in '$(VintageStoryDir)'. Set the VINTAGE_STORY environment variable to your Vintage Story install directory." />
+  </Target>
+
+  <ItemGroup>
+    <Compile Include="src/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="VintagestoryAPI">
+      <HintPath>$(VintageStoryDir)/VintagestoryAPI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="VSSurvivalMod">
+      <HintPath>$(VintageStoryDir)/Mods/VSSurvivalMod.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="VSEssentials">
+      <HintPath>$(VintageStoryDir)/Mods/VSEssentials.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(VintageStoryDir)/Lib/Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>
