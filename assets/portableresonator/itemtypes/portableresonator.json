@@ -39,10 +39,15 @@
 		// One per shelf level (a level is 8 voxels tall). Also covers cabinets, which fall back to this.
 		shelvable: "SingleCenter",
 		onshelfTransform: {
-			translation: { x: -0.125, y: 0, z: 0.125 },
-			rotation: { x: 0, y: 0, z: 0 },
+			translation: { x: 0, y: 0.1, z: 0.3 },
+			rotation: { x: -54, y: 0, z: 0 },
 			origin: { x: 0.625, y: 0, z: 0.375 },
-			scale: 0.4
+			scale: 0.7
+		},
+		displaycaseable: true,
+		onDisplayTransform: {
+			translation: { x: 0.4, y: -0, z: 0.1 },
+			rotation: { x: 0, y: 8, z: 0 }
 		}
 	},
 	creativeinventory: { "general": ["*-empty"], "items": ["*-empty"] },
