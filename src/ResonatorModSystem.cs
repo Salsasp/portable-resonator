@@ -120,6 +120,29 @@ namespace PortableResonator
 
         #endregion
 
+        /// <summary>
+        /// The player <paramref name="listener"/> hears: the nearest one within <see cref="HearingRange"/> publishing a
+        /// track (the listener included), or null. The music channel plays one track at a time. Pure over entity
+        /// positions and watched attributes, so the server-side tests can check it.
+        /// </summary>
+        public static EntityPlayer FindSource(EntityPlayer listener, IEnumerable<IPlayer> players, out double squareDistance)
+        {
+            EntityPlayer source = null;
+            squareDistance = HearingRange * HearingRange;
+            foreach (var plr in players)
+            {
+                var entity = plr.Entity;
+                if (entity?.WatchedAttributes.GetString(TrackAttr) == null) continue;
+                double dist = entity.Pos.SquareDistanceTo(listener.Pos.XYZ);
+                if (dist <= squareDistance)
+                {
+                    squareDistance = dist;
+                    source = entity;
+                }
+            }
+            return source;
+        }
+
         #region Client
 
         private ICoreClientAPI capi;
@@ -141,21 +164,7 @@ namespace PortableResonator
             var listener = capi.World.Player?.Entity;
             if (listener == null) return;
 
-            // Nearest holder in range wins; the music channel plays one track at a time.
-            EntityPlayer source = null;
-            double best = HearingRange * HearingRange;
-            foreach (var plr in capi.World.AllOnlinePlayers)
-            {
-                var entity = plr.Entity;
-                if (entity?.WatchedAttributes.GetString(TrackAttr) == null) continue;
-                double dist = entity.Pos.SquareDistanceTo(listener.Pos.XYZ);
-                if (dist <= best)
-                {
-                    best = dist;
-                    source = entity;
-                }
-            }
-
+            var source = FindSource(listener, capi.World.AllOnlinePlayers, out double best);
             if (source == null)
             {
                 stopTrack();

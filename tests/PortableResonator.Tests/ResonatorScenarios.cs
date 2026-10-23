@@ -217,24 +217,10 @@ namespace PortableResonator.Tests
             }
         }
 
-        private Item cylinderItem()
-        {
-            return World.Api.World.Items.FirstOrDefault(i => i?.Code != null && ItemPortableResonator.IsCylinder(new ItemStack(i)));
-        }
+        private Item cylinderItem() => TestKit.Cylinders(World).FirstOrDefault();
 
-        private (ItemSlot slot, ItemPortableResonator item) giveResonator(ITestPlayer player)
-        {
-            TestKit.ClearHotbar(player);
-            var item = (ItemPortableResonator)TestKit.Item(World, Empty);
-            TestKit.PutInHotbar(player, 0, new ItemStack(item));
-            return (TestKit.HotbarSlot(player, 0), item);
-        }
+        private (ItemSlot slot, ItemPortableResonator item) giveResonator(ITestPlayer player) => TestKit.GiveResonator(World, player);
 
-        private (ItemSlot slot, ItemPortableResonator item) giveLoaded(ITestPlayer player)
-        {
-            var (slot, _) = giveResonator(player);
-            Assert.True(ItemPortableResonator.StoreCylinder(player.Player, slot, new ItemStack(cylinderItem())));
-            return (slot, (ItemPortableResonator)slot.Itemstack.Collectible);
-        }
+        private (ItemSlot slot, ItemPortableResonator item) giveLoaded(ITestPlayer player) => TestKit.GiveLoaded(World, player);
     }
 }

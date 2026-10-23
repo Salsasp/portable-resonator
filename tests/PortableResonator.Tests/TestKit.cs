@@ -77,5 +77,34 @@ namespace PortableResonator.Tests
 
         /// <summary>Runs until the mod systems' 1 second server tick has had a chance to fire, or the condition holds.</summary>
         public static Task UntilTicked(IWorldSession world, Func<bool> condition) => world.Until(condition, 300);
+
+        public const string EmptyResonator = "portableresonator:portableresonator-empty";
+        public const string LoadedResonator = "portableresonator:portableresonator-loaded";
+
+        /// <summary>Every vanilla tuning cylinder (anything the portable resonator accepts), in a stable order.</summary>
+        public static List<Item> Cylinders(IWorldSession world)
+        {
+            return world.Api.World.Items
+                .Where(i => i?.Code != null && ItemPortableResonator.IsCylinder(new ItemStack(i)))
+                .OrderBy(i => i.Code.ToString())
+                .ToList();
+        }
+
+        /// <summary>Clears the hotbar and puts an empty portable resonator in slot 0.</summary>
+        public static (ItemSlot slot, ItemPortableResonator item) GiveResonator(IWorldSession world, ITestPlayer player)
+        {
+            ClearHotbar(player);
+            var item = (ItemPortableResonator)Item(world, EmptyResonator);
+            PutInHotbar(player, 0, new ItemStack(item));
+            return (HotbarSlot(player, 0), item);
+        }
+
+        /// <summary>As <see cref="GiveResonator"/>, loaded with <paramref name="cylinder"/> (default: the first cylinder).</summary>
+        public static (ItemSlot slot, ItemPortableResonator item) GiveLoaded(IWorldSession world, ITestPlayer player, Item cylinder = null)
+        {
+            var (slot, _) = GiveResonator(world, player);
+            Assert.True(ItemPortableResonator.StoreCylinder(player.Player, slot, new ItemStack(cylinder ?? Cylinders(world)[0])));
+            return (slot, (ItemPortableResonator)slot.Itemstack.Collectible);
+        }
     }
 }
