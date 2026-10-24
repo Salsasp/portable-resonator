@@ -59,6 +59,24 @@ namespace PortableResonator.Tests
         }
 
         /// <summary>
+        /// Shapes attached to an entity (elk gear) hang every top-level element on an element of the entity's shape.
+        /// One without a stepParentName is dropped in-game with only a log warning ("Will not be visible").
+        /// </summary>
+        [Theory]
+        [MemberData(nameof(ShapeFiles))]
+        public void Worn_shape_top_level_elements_have_a_step_parent(string file)
+        {
+            if (!file.StartsWith("shapes/item/wearable/")) return;
+
+            var orphans = ((parse(file)["elements"] as JArray) ?? new JArray())
+                .Where(e => string.IsNullOrEmpty(e["stepParentName"]?.ToString()))
+                .Select(e => e["name"]?.ToString())
+                .ToList();
+
+            Assert.True(orphans.Count == 0, $"{file}: top-level elements without stepParentName (invisible in-game): {string.Join(", ", orphans)}");
+        }
+
+        /// <summary>
         /// The client's animator lerps all three axes of a keyframe's offset, rotation or stretch as non-null values
         /// (Animation.lerpKeyFrameElement), so a keyframe setting only rotationY crashes the client when the
         /// animator is built. VS Model Creator always writes all three; hand-written shapes must too.
@@ -122,6 +140,9 @@ namespace PortableResonator.Tests
             // and without this check Path.Combine would find the file on this machine and pass.
             Assert.True(domain == Domain || domain == "game", $"{what}: {location} is not a game: or {Domain}: asset path");
             Assert.False(Path.IsPathRooted(path), $"{what}: {location} is an absolute path");
+            // VS Model Creator can write Windows separators; asset paths only use '/', and on Windows
+            // Path.Combine would accept the backslashes and pass.
+            Assert.False(path.Contains('\\'), $"{what}: {location} uses backslashes");
 
             var paths = candidates(domain, path, category, extension).ToList();
             Assert.True(paths.Any(File.Exists), $"{what}: {location} not found (looked in {string.Join(", ", paths)})");
