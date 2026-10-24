@@ -12,7 +12,8 @@ namespace PortableResonator
     /// <summary>
     /// Handheld resonator. Ctrl + right-click opens a one-slot UI for the tuning cylinder
     /// (<see cref="InventoryPortableResonator"/>); shift + right-click starts/stops the song, resuming where it
-    /// stopped. Plain right-click is left free for shelf placement. The cylinder lives in the stack's attributes, and
+    /// stopped. Plain right-click is left free for shelf placement, and clicks on entities for attaching it to an elk
+    /// (item JSON <c>attachableToEntity</c>). The cylinder lives in the stack's attributes, and
     /// the <c>cylinder</c> variant (<c>empty</c> / <c>loaded</c>) mirrors it, because item codes reach other
     /// clients while stack attributes don't. Playback itself is run by <see cref="ResonatorModSystem"/>.
     /// </summary>
@@ -65,9 +66,23 @@ namespace PortableResonator
 
         public void SetPosition(ItemStack stack, double seconds) => stack.Attributes.SetDouble(PositionAttr, seconds);
 
+        /// <summary>
+        /// Whether <paramref name="stack"/>, shown in <paramref name="slot"/>, should run its shape animation. Our own
+        /// stacks carry the cylinder and playing flag; another player's stack attributes don't reach this client, so
+        /// for those the loaded variant counts as playing while its holder publishes a track.
+        /// </summary>
+        public bool ShowsPlaying(ItemStack stack, ItemSlot slot)
+        {
+            if (HasCylinder(stack)) return IsPlaying(stack);
+            if (Variant["cylinder"] != "loaded") return false;
+
+            var holder = (slot?.Inventory as InventoryBasePlayer)?.Player?.Entity;
+            return holder?.WatchedAttributes.HasAttribute(ResonatorModSystem.TrackAttr) == true;
+        }
+
         #endregion
 
-        #region Server actions (also what the tests drive)
+        #region Server actions
 
         /// <summary>
         /// Writes <paramref name="cylinder"/> (null = removed) into the resonator in <paramref name="slot"/> and swaps
@@ -142,14 +157,64 @@ namespace PortableResonator
 
         #endregion
 
+        #region Rendering (client)
+
+        /// <summary>The shape animation run while a track plays.</summary>
+        public const string RunningAnimation = "running";
+
+        /// <summary>One mesh per frame of <see cref="RunningAnimation"/>, baked on first use. Empty if there's none.</summary>
+        private MultiTextureMeshRef[] runningMeshes;
+
+        public override void OnBeforeRender(ICoreClientAPI capi, ItemStack itemstack, EnumItemRenderTarget target, ref ItemRenderInfo renderinfo)
+        {
+            base.OnBeforeRender(capi, itemstack, target, ref renderinfo);
+            if (!ShowsPlaying(itemstack, renderinfo.InSlot)) return;
+
+            var meshes = runningMeshes ??= bakeRunningMeshes(capi);
+            if (meshes.Length == 0) return;
+            int frame = (int)(capi.ElapsedMilliseconds * ShapeAnimationPose.FramesPerSecond / 1000) % meshes.Length;
+            renderinfo.ModelRef = meshes[frame];
+        }
+
+        private MultiTextureMeshRef[] bakeRunningMeshes(ICoreClientAPI capi)
+        {
+            var location = Shape?.Base?.CopyWithPathPrefixAndAppendixOnce("shapes/", ".json");
+            var shape = location == null ? null : Vintagestory.API.Common.Shape.TryGet(capi, location);
+            var animation = shape?.Animations?.FirstOrDefault(a => a.Code == RunningAnimation);
+            if (animation == null || animation.QuantityFrames <= 0) return System.Array.Empty<MultiTextureMeshRef>();
+
+            var meshes = new MultiTextureMeshRef[animation.QuantityFrames];
+            for (int frame = 0; frame < meshes.Length; frame++)
+            {
+                var posed = shape.Clone();
+                ShapeAnimationPose.Apply(posed, animation, frame);
+                capi.Tesselator.TesselateShape(this, posed, out var mesh);
+                meshes[frame] = capi.Render.UploadMultiTextureMesh(mesh);
+            }
+            return meshes;
+        }
+
+        public override void OnUnloaded(ICoreAPI api)
+        {
+            if (runningMeshes != null)
+            {
+                foreach (var mesh in runningMeshes) mesh?.Dispose();
+                runningMeshes = null;
+            }
+            base.OnUnloaded(api);
+        }
+
+        #endregion
+
         #region Interaction
 
         public override void OnHeldInteractStart(ItemSlot slot, EntityAgent byEntity, BlockSelection blockSel, EntitySelection entitySel, bool firstEvent, ref EnumHandHandling handling)
         {
             // Plain right-click is left to the targeted block (shelf placement); ctrl + shift + right-click is ground
-            // placement (the GroundStorable behavior, run by base).
+            // placement (the GroundStorable behavior, run by base). Clicks on an entity are left to the entity, which
+            // only gets them if we don't claim them: ctrl + right-click on an elk attaches the resonator.
             var controls = byEntity.Controls;
-            if (!firstEvent || controls.CtrlKey == controls.ShiftKey || byEntity is not EntityPlayer { Player: { } player })
+            if (!firstEvent || entitySel != null || controls.CtrlKey == controls.ShiftKey || byEntity is not EntityPlayer { Player: { } player })
             {
                 base.OnHeldInteractStart(slot, byEntity, blockSel, entitySel, firstEvent, ref handling);
                 return;

@@ -44,6 +44,14 @@
 			origin: { x: 0.625, y: 0, z: 0.375 },
 			scale: 0.7
 		},
+		attachableToEntity: {
+			categoryCode: "pot",
+			texturePrefixCode: "portableresonator",
+			attachedShapeBySlotCode: {
+				"frontrightside": { base: "item/wearable/elk/portableresonator-right-{cylinder}" },
+				"frontleftside": { base: "item/wearable/elk/portableresonator-left-{cylinder}" }
+			}
+		},
 		displaycaseable: true,
 		onDisplayTransform: {
 			translation: { x: 0.4, y: -0, z: 0.1 },
