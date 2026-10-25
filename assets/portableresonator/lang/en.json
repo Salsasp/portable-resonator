@@ -1,6 +1,6 @@
 {
 	"item-portableresonator-*": "Portable Resonator",
-	"itemdesc-portableresonator-*": "A portable version of the standard resonator. Only the most wealthy nobles possessed such a device of luxury.",
+	"itemdesc-portableresonator-*": "A portable version of the standard resonator. Only the most wealthy nobles possessed such a device of luxury.\n",
 	"resonator-empty": "No tuning cylinder loaded",
 	"resonator-loaded": "Loaded: {0}",
 	"resonator-playing": "Playing",
