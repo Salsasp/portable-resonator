@@ -1,7 +1,7 @@
 {
 	"type": "code",
 	"modid": "portableresonator",
-	"name": "Salsa's Portable Resonator",
+	"name": "Portable Resonator",
 	"authors": [ "salsa11" ],
 	"description": "Adds a handheld version of the standard resonator",
 	"version": "1.0.0",
