@@ -4,7 +4,7 @@
 	"name": "Portable Resonator",
 	"authors": [ "salsa11" ],
 	"description": "Adds a handheld version of the standard resonator",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"dependencies": {
 		"game": "1.22.0",
 		"survival": ""
