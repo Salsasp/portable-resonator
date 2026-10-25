@@ -1,0 +1,13 @@
+[
+	{
+		ingredientPattern: "WR",
+		ingredients: {
+			"W": { type: "item", code: "game:wrench-*", isTool: true, toolDurabilityCost: 10 },
+			"R": { type: "block", code: "game:resonator-north" },
+		},
+		width: 2,
+		height: 1,
+        shapeless: true,
+		output: { type: "item", code: "portableresonator-empty", quantity: 1 }
+	}
+]
