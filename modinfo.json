@@ -1,9 +1,9 @@
 {
 	"type": "code",
 	"modid": "portableresonator",
-	"name": "Portable Resonator",
-	"authors": [ "salsa" ],
-	"description": "A handheld resonator that plays tuning cylinders wherever you carry it.",
+	"name": "Salsa's Portable Resonator",
+	"authors": [ "salsa11" ],
+	"description": "Adds a handheld version of the standard resonator",
 	"version": "1.0.0",
 	"dependencies": {
 		"game": "1.22.0",
